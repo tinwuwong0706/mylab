@@ -1,0 +1,131 @@
+import React, { Suspense, useState, useEffect } from 'react';
+import './App.css';
+// Lazy load remote components
+const RemoteColorLabel = React.lazy(() => 
+  import('sample_module_app/ColorLabel')
+);
+const RemoteHelloWorld = React.lazy(() => 
+  import('sample_module_app/HelloWorld')
+);
+// Lazy load remote API
+const RemoteApi = React.lazy(() => import('sample_module_app/Api'));
+
+function App() {
+  const [api, setApi] = useState(null);
+  const [selectedColor, setSelectedColor] = useState('red');
+  const [availableColors, setAvailableColors] = useState([]);
+  const [currentColor, setCurrentColor] = useState('black');
+
+  // Load API and subscribe to changes
+  useEffect(() => {
+    const loadApi = async () => {
+      try {
+        const apiModule = await import('sample_module_app/Api');
+        setApi(apiModule);
+        
+        // Set available colors
+        const colors = apiModule.default.getAvailableColors();
+        setAvailableColors(colors);
+        setSelectedColor(colors[0]);
+        
+        // Set initial color
+        setCurrentColor(apiModule.default.getCurrentColor());
+        
+        // Subscribe to color changes
+        apiModule.default.subscribe(newColor => {
+          setCurrentColor(newColor);
+        });
+        
+      } catch (error) {
+        console.error('Failed to load remote API:', error);
+      }
+    };
+
+    loadApi();
+  }, []);
+
+  const changeColor = (color) => {
+    if (api) {
+      api.default.setColor(color);
+    }
+  };
+
+  const cycleColors = () => {
+    if (api) {
+      api.default.cycleColor();
+    }
+  };
+
+  const setRandomColor = () => {
+    if (api) {
+      api.default.setRandomColor();
+    }
+  };
+
+  if (!api) {
+    return <div>Loading Remote API...</div>;
+  }
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Shell Application</h1>
+        <p>Controlling color via Remote API</p>
+        
+        {/* API Controls */}
+        <div style={{ margin: '20px 0', padding: '15px', border: '1px solid white', borderRadius: '5px' }}>
+          <h3>Remote API Controls</h3>
+          <p>Current Color: <span style={{ color: currentColor, fontWeight: 'bold' }}>{currentColor}</span></p>
+          
+          <select 
+            value={selectedColor} 
+            onChange={(e) => setSelectedColor(e.target.value)}
+            style={{ marginRight: '10px', padding: '5px' }}
+          >
+            {availableColors.map(color => (
+              <option key={color} value={color}>
+                {color}
+              </option>
+            ))}
+          </select>
+          
+          <button onClick={() => changeColor(selectedColor)} style={{ margin: '5px' }}>
+            Set Color
+          </button>
+          
+          <button onClick={cycleColors} style={{ margin: '5px' }}>
+            Cycle Colors
+          </button>
+          
+          <button onClick={setRandomColor} style={{ margin: '5px' }}>
+            Random Color
+          </button>
+        </div>
+       <Suspense fallback={<div>Loading Remote Component...</div>}>
+          <RemoteHelloWorld />
+        </Suspense>
+        {/* Remote ColorLabel component */}
+        <Suspense fallback={<div>Loading Remote Component...</div>}>
+          <RemoteColorLabel 
+            text={`Current color: ${currentColor}`}
+          />
+        </Suspense>
+
+        {/* Color Preview */}
+        <div style={{ 
+          marginTop: '20px', 
+          padding: '20px', 
+          backgroundColor: currentColor,
+          borderRadius: '10px',
+          border: '2px solid white'
+        }}>
+          <p style={{ color: 'white', fontWeight: 'bold' }}>
+            Color Preview
+          </p>
+        </div>
+      </header>
+    </div>
+  );
+}
+
+export default App;

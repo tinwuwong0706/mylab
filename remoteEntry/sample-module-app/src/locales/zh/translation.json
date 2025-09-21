@@ -1,0 +1,11 @@
+{
+  "hello": "你好",
+  "welcome": "欢迎使用模块联邦国际化",
+  "description": "这个组件使用i18next展示了国际化功能",
+  "button": "切换语言",
+  "currentLanguage": "当前语言: 中文",
+  "technicalDetails": "技术细节",
+  "language": "语言",
+  "using": "使用",
+  "loadedFrom": "加载自"
+}

@@ -1,0 +1,56 @@
+import React, { useState, useEffect} from 'react';
+import './App.css';
+import {HelloWorldInBlue} from './privateComponent';
+import ColorLabel from './component/ColorLabel';
+import Parent from './component/Parent';
+
+function HelloWorld() {
+
+  const [externalColor, setExternalColor] = useState('black');
+  const [fontSize, setFontSize] = useState('25px');
+  
+
+  const handleColorChange = (newColor) => {
+    console.log('Color changed to:', newColor);
+  };
+  
+  return (
+    <div className="App">
+      <header className="App-header">
+        <div style={{ color: 'yellow' }}>
+        <h1>Hello World from Remote Module!</h1>
+        <p>This component is loaded remotely 🚀</p>
+        </div>
+        <HelloWorldInBlue/>
+        <div>
+          <h1>Read child input sample</h1>
+          <div>
+            <Parent/>
+          </div>
+          <h2>Control ColorLabel from Parent</h2>
+          
+          <button onClick={() => setFontSize('36px')}>Set Font Size</button>
+          <button onClick={() => setExternalColor('blue')}>Make Blue</button>
+          <button onClick={() => setExternalColor('green')}>Make Green</button>
+
+          <ColorLabel 
+            text="Text 1 Controlled from parent" 
+            fontSize={fontSize}
+            externalColor={externalColor}
+            onColorChange={handleColorChange}
+          />
+          <ColorLabel 
+            text="Text 2 Controlled from parent" 
+            externalColor={externalColor}
+            onColorChange={handleColorChange}
+          />          
+        </div>
+      </header>
+    </div>
+  );
+}
+
+export default HelloWorld;
+
+// Export for Module Federation
+export { HelloWorld };

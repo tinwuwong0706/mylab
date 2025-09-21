@@ -1,0 +1,117 @@
+import React, { useState, useEffect } from 'react';
+import PocWrapper from './pocs/PocWrapper'; // Fixed import path
+import './App.css';
+
+const useDynamicPocCases = () => {
+  const [pocCases, setPocCases] = useState([]);
+
+  useEffect(() => {
+    const pocConfigs = [
+      { id: 1, path: 'pocs/PocMFHelloWorld' }
+    ];
+
+    const initialCases = pocConfigs.map(config => ({
+      ...config,
+      name: 'Loading...', // Temporary placeholder
+      description: 'Loading metadata...', // Temporary placeholder
+      component: (props) => (
+        <PocWrapper 
+          componentPath={config.path}
+          onMetadataLoaded={(metadata) => {
+            setPocCases(prev => prev.map(poc =>
+              poc.id === config.id
+                ? { ...poc, name: metadata.name, description: metadata.description }
+                : poc
+            ));
+          }}
+          {...props}
+        />
+      )
+    }));
+
+    setPocCases(initialCases);
+  }, []);
+
+  return pocCases;
+};
+
+function App() {
+  const [selectedPoc, setSelectedPoc] = useState(null); // Fixed missing parenthesis
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const pocCases = useDynamicPocCases();
+
+  useEffect(() => {
+    if (pocCases.length > 0 && !selectedPoc) {
+      setSelectedPoc(pocCases[0]);
+    }
+  }, [pocCases, selectedPoc]);
+
+  // Add null checks for selectedPoc
+  if (!selectedPoc) {
+    return <div>Loading POC cases...</div>;
+  }
+
+  return (
+    <div className="app">
+      {/* Header */}
+      <header className="app-header">
+        <h1>POC Laboratory - Sample Shell Application</h1>
+        <p>Proof of Concept Testing Platform</p>
+      </header>
+
+      <div className="app-body">
+        {/* Sidebar */}
+        <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+          <div className="sidebar-header">
+            <h2>POC Cases</h2>
+            <button 
+              className="toggle-sidebar"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            >
+              {isSidebarCollapsed ? '→' : '←'}
+            </button>
+          </div>
+          
+          {!isSidebarCollapsed && (
+            <nav className="poc-nav">
+              <ul>
+                {pocCases.map(poc => (
+                  <li key={poc.id}>
+                    <button
+                      className={`poc-button ${selectedPoc.id === poc.id ? 'active' : ''}`}
+                      onClick={() => setSelectedPoc(poc)}
+                    >
+                      {poc.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <main className="main-content">
+          <div className="content-header">
+            <h2>{selectedPoc.name}</h2>
+            {isSidebarCollapsed && (
+              <button 
+                className="show-sidebar"
+                onClick={() => setIsSidebarCollapsed(false)}
+              >
+                Show Menu
+              </button>
+            )}
+          </div>
+          
+          <div className="poc-container">
+            <selectedPoc.component /> {/* Fixed: Use JSX directly */}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default App;

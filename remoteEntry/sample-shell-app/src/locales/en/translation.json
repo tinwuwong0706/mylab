@@ -1,0 +1,17 @@
+{
+  "loading": "Loading i18n component...",
+  "loading2": "Loading i18n2 component...",
+  "shellLanguage": "Shell app knows current language",
+  "setEnglish": "Set English",
+  "setChinese": "Set Chinese",
+  "title": "Module Federation i18n Demo",
+  "hello": "Hello",
+  "welcome": "Welcome to Module Federation i18n",
+  "description": "This component demonstrates internationalization with i18next",
+  "button": "Change Language",
+  "currentLanguage": "Current Language: English",
+  "technicalDetails": "Technical Details",
+  "language": "Language",
+  "using": "Using",
+  "loadedFrom": "Loaded from"
+}

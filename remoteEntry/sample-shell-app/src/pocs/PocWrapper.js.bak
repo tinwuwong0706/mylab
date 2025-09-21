@@ -1,0 +1,150 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+class PocWrapper extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      Component: null,
+      metadata: null,
+      loading: true,
+      error: null
+    };
+    
+    // ✅ Add componentMap definition
+    this.componentMap = {
+      'pocs/PocMFHelloWorld': () => import('sample_module_app/pocs/PocMFHelloWorld'),
+      'pocs/ColorApiPoc': () => import('sample_module_app/pocs/ColorApiPoc'),
+      'pocs/StateManagementPoc': () => import('sample_module_app/pocs/StateManagementPoc'),
+      // Add more components as needed
+    };
+  }
+
+  componentDidMount() {
+    this.loadComponent();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.componentPath !== this.props.componentPath) {
+      this.loadComponent();
+    }
+  }
+
+  loadComponent = async () => {
+    const { componentPath, onMetadataLoaded } = this.props;
+    
+    this.setState({ loading: true, error: null });
+
+    try {
+      const importFunction = this.componentMap[componentPath];
+      
+      if (!importFunction) {
+        throw new Error(`No import mapping found for path: ${componentPath}`);
+      }
+
+      const module = await importFunction();
+      
+      // ✅ Get the DEFAULT export (the actual component)
+      const Component = module.default;
+      
+      // ✅ Check if it's a valid React component
+      if (!Component || typeof Component !== 'function') {
+        throw new Error(`Invalid component export from ${componentPath}. Expected a function/class component.`);
+      }
+
+      const metadata = {
+        name: module.title || this.getDefaultName(componentPath),
+        description: module.description || "Remote component demonstration",
+        version: module.version || "1.0.0"
+      };
+
+      this.setState({
+        Component, // ✅ Store the component function, not the module
+        metadata,
+        loading: false
+      });
+
+      if (onMetadataLoaded) {
+        onMetadataLoaded(metadata);
+      }
+
+    } catch (error) {
+      console.error('Failed to load component:', error);
+      this.setState({
+        error,
+        loading: false,
+        Component: this.renderErrorComponent(error)
+      });
+    }
+  };
+
+  // ✅ Remove unused methods (they're not being used and can cause confusion)
+  // importRemoteComponent and loadRemoteEntry are not used in the current implementation
+
+  getDefaultName = (path) => {
+    const fileName = path.split('/').pop();
+    return fileName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  };
+
+  renderErrorComponent = (error) => {
+    return () => (
+      <div style={{ 
+        padding: '20px', 
+        border: '2px solid #ff6b6b', 
+        borderRadius: '8px',
+        backgroundColor: '#ffeaea',
+        maxWidth: '500px',
+        margin: '0 auto'
+      }}>
+        <h3>⚠️ Failed to Load Component</h3>
+        <p><strong>Path:</strong> {this.props.componentPath}</p>
+        <p><strong>Error:</strong> {error.message}</p>
+        <p><strong>Possible causes:</strong></p>
+        <ul>
+          <li>Remote app not running on port 3001</li>
+          <li>Component not exposed in remote configuration</li>
+          <li>Network connectivity issue</li>
+        </ul>
+        <button 
+          onClick={this.loadComponent}
+          style={{
+            marginTop: '10px',
+            padding: '8px 16px',
+            backgroundColor: '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Retry Loading
+        </button>
+      </div>
+    );
+  };
+
+  render() {
+    const { Component, loading } = this.state;
+    const { ...restProps } = this.props;
+
+    if (loading) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <div>Loading {this.props.componentPath}...</div>
+          <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+            Ensure remote app is running on http://localhost:3001
+          </div>
+        </div>
+      );
+    }
+
+    return Component ? <Component {...restProps} /> : null;
+  }
+}
+
+PocWrapper.propTypes = {
+  componentPath: PropTypes.string.isRequired,
+  onMetadataLoaded: PropTypes.func.isRequired
+};
+
+export default PocWrapper;

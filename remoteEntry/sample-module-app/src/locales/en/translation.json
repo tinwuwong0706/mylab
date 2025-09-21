@@ -1,0 +1,11 @@
+{
+  "hello": "Hello",
+  "welcome": "Welcome to Module Federation i18n",
+  "description": "This component demonstrates internationalization with i18next",
+  "button": "Change Language",
+  "currentLanguage": "Current Language: English",
+  "technicalDetails": "Technical Details",
+  "language": "Language",
+  "using": "Using",
+  "loadedFrom": "Loaded from"
+}
