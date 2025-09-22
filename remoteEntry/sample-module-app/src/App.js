@@ -4,6 +4,7 @@ import PocMFHelloWorld from './pocs/PocMFHelloWorld';
 import PocMFi18n from './pocs/PocMFi18n';
 import PocMFi18nEvt from './pocs/PocMFi18nEvt';
 import PocMFi18nReadFile from './pocs/PocMFi18nReadFile';
+import { I18nextProvider } from 'react-i18next';
 
 // Mock POC cases - replace with your actual POC components
 //const Poc1 = () => <div className="poc-content"><h2>POC 1: Module Federation</h2><p>This demonstrates remote component loading.</p></div>;
